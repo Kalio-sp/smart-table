@@ -47,7 +47,16 @@ const sampleTable = initTable(
 );
 
 const { applyPagination, updatePagination } = initPagination(
-  sampleTable.pagination.elements,
+  {
+    pages: sampleTable.pagination.elements.pages,
+    fromRow: sampleTable.pagination.elements.fromRow,
+    toRow: sampleTable.pagination.elements.toRow,
+    totalRows: sampleTable.pagination.elements.totalRows,
+    firstPage: sampleTable.pagination.elements.firstPage,
+    previousPage: sampleTable.pagination.elements.previousPage,
+    nextPage: sampleTable.pagination.elements.nextPage,
+    lastPage: sampleTable.pagination.elements.lastPage,
+  },
   (el, page, isCurrent) => {
     el.querySelector("input").value = page;
     el.querySelector("input").checked = isCurrent;
@@ -55,6 +64,7 @@ const { applyPagination, updatePagination } = initPagination(
     return el;
   }
 );
+console.log("Pagination elements:", sampleTable.pagination.elements);
 
 const applySorting = initSorting([
   sampleTable.header.elements.sortByDate,

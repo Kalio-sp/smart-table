@@ -1,39 +1,55 @@
-export function initPagination({ pages, fromRow, toRow, totalRows }, createPage) {
-    let pageCount = 1;
+import { getPages } from "../lib/utils.js";
 
-    const pageTemplate = pages.firstElementChild.cloneNode(true);
-    pages.firstElementChild.remove();
+export const initPagination = (
+  { pages, fromRow, toRow, totalRows },
+  createPage
+) => {
+  let pageCount;
+  const pageTemplate = pages.firstElementChild.cloneNode(true);
 
-    const applyPagination = (query, state, action) => {
-        const limit = state.rowsPerPage;
-        let page = state.page;
+  const applyPagination = (query, state, action) => {
+    const limit = state.rowsPerPage;
+    let page = state.page;
 
-        if (action) {
-            switch (action.name) {
-                case 'prev': page = Math.max(1, page - 1); break;
-                case 'next': page = Math.min(pageCount, page + 1); break;
-                case 'first': page = 1; break;
-                case 'last': page = pageCount; break;
-            }
-        }
+    if (action)
+      switch (action.name) {
+        case "prev":
+          page = Math.max(1, page - 1);
+          break;
+        case "next":
+          page = Math.min(pageCount, page + 1);
+          break;
+        case "first":
+          page = 1;
+          break;
+        case "last":
+          page = pageCount;
+          break;
+      }
 
-        return Object.assign({}, query, { limit, page });
-    };
+    return Object.assign({}, query, {
+      limit,
+      page,
+    });
+  };
 
-    const updatePagination = (total, { page, limit }) => {
-        pageCount = Math.ceil(total / limit);
+  const updatePagination = (total, { page, limit }) => {
+    pageCount = Math.ceil(total / limit);
+    const visiblePages = getPages(page, pageCount, 5);
+    pages.replaceChildren(
+      ...visiblePages.map((pageNumber) => {
+        const el = pageTemplate.cloneNode(true);
+        return createPage(el, pageNumber, pageNumber === page);
+      })
+    );
 
-        pages.replaceChildren(
-            ...Array.from({ length: pageCount }, (_, i) => {
-                const el = pageTemplate.cloneNode(true);
-                return createPage(el, i + 1, i + 1 === page);
-            })
-        );
+    fromRow.textContent = (page - 1) * limit + 1;
+    toRow.textContent = Math.min(page * limit, pageCount);
+    totalRows.textContent = pageCount;
+  };
 
-        fromRow.textContent = total ? (page - 1) * limit + 1 : 0;
-        toRow.textContent = Math.min(page * limit, total);
-        totalRows.textContent = total;
-    };
-
-    return { applyPagination, updatePagination };
-}
+  return {
+    updatePagination,
+    applyPagination,
+  };
+};
